@@ -1,0 +1,9 @@
+# Git-based deploy clones the whole repo into one directory, so config/
+# ends up inside the served directory instead of outside it. Block every
+# request here regardless of filename.
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+    Deny from all
+</IfModule>
