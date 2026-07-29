@@ -1,40 +1,33 @@
 # Aashish Portfolio
 
-Plain-PHP site scaffolded for Hostinger shared hosting.
+Plain-PHP site scaffolded for Hostinger shared hosting, deployed via Hostinger's Git auto-deploy.
 
 ## Structure
 
-- `public_html/` — the web root. Everything inside is publicly served.
-- `config/` — sits **outside** `public_html` so it's not web-accessible on Hostinger.
-- `.env` — local/production secrets (never committed).
+The repo root **is** the web root — everything here gets deployed as-is into Hostinger's `public_html`. `config/` sits alongside the public pages rather than outside them (Git-based deploy clones the whole repo into one directory, so there's no "outside the web root" to put it in). It's protected instead by `config/.htaccess`, which denies all requests to that folder regardless of filename. `.env` is protected by the dotfile-deny rule in the root `.htaccess`.
 
 ## Local Setup
 
 1. Copy `.env.example` to `.env` and fill in your MySQL credentials (from Hostinger's hPanel > Databases).
 2. Serve locally with PHP's built-in server:
    ```
-   php -S localhost:8000 -t public_html
+   php -S localhost:8000 -t .
    ```
 3. Visit `http://localhost:8000/`.
 
 ## Deploying to Hostinger
 
-Hostinger's file manager / FTP root has `public_html` as a folder alongside other private folders. Upload like this:
+This repo is connected to Hostinger's Git auto-deploy (hPanel > Websites > Manage > Advanced > Git). The deploy **Directory** is set to `public_html`, so every push to `main` clones the full repo directly into it — meaning `index.php`, `config/`, `.htaccess`, etc. all land at the top level of `public_html`, exactly matching this repo's layout. Don't nest a `public_html/` folder inside this repo — the repo root already **is** the site root.
 
-```
-/ (Hostinger account root)
-├── public_html/   <- upload the contents of this project's public_html/ here
-├── config/         <- upload this project's config/ here (sibling of public_html)
-└── .env            <- upload here, filled with production DB credentials
-```
+`.env` isn't committed (it's git-ignored), so it won't be created by the auto-deploy. Create it once directly in Hostinger's `public_html` via File Manager with real production credentials — it'll persist across future deploys as long as the deploy doesn't do a clean wipe.
 
-Because `config/` and `.env` live outside `public_html`, they are not reachable via the browser — only PHP running inside `public_html` can `require` them via `../config/...` paths.
+If you ever move away from Git auto-deploy back to manual FTP/File Manager upload, the process is the same: upload everything in this repo directly into `public_html`, plus a `.env` with real credentials.
 
 ## Database
 
 `config/database.php` exposes `get_db(): PDO`, a lazily-created PDO connection built from the `DB_*` environment variables. Call it wherever you need database access:
 
 ```php
-require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/config/database.php';
 $pdo = get_db();
 ```

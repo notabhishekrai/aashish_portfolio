@@ -2,6 +2,11 @@ ErrorDocument 404 /404.php
 
 RewriteEngine On
 
+# Block .git/ entirely — some Git-deploy setups leave it in the served
+# directory, and the dotfile FilesMatch below only matches basenames,
+# not directory path segments.
+RewriteRule ^\.git/ - [F,L]
+
 # Force HTTPS
 RewriteCond %{HTTPS} off
 RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
