@@ -27,7 +27,7 @@ There is no test suite, linter config, or build step beyond `php -l`.
 - **`includes/functions.php`** holds two small helpers used throughout: `e($string)` (htmlspecialchars wrapper — always escape interpolated content) and `asset_url($path)` (prefixes `/assets/`).
 - **Content-as-data pattern**: page content lives in plain PHP associative arrays at the top of the page file (see the `$hero`, `$about`, `$services`, `$work`, `$journal`, `$contact` arrays in `index.php`), rendered below with `foreach` loops. There's no CMS or database-backed content yet — new sections should follow this same array-then-loop shape rather than inlining strings into markup.
 - **Image placeholders**: real photography isn't in the repo yet. Slots where an image belongs are `<div class="img-placeholder">` (see `assets/css/style.css`) — swap these for real `<img>` tags as photos become available; keep the `grayscale` class where present, it matches the site's design treatment.
-- **Other pages implied by nav/work/journal links** (`project-detail.php`, `journal-archive.php`, `journal-detail.php`) don't exist yet — they're linked from `index.php`/`work-archive.php` in anticipation of being built.
+- **Pages**: `index.php` (home), `work-archive.php`, `work-detail.php` (currently the single "In Plain Sight" project), `journal-archive.php`, `journal-detail.php` (reads `?entry=N` to number its decorative badge, but content is currently the single "On filming what can't be seen" entry regardless of `N`).
 
 ## Development Workflow
 

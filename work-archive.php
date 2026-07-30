@@ -19,7 +19,7 @@ $hero = [
 ];
 
 $items = [
-    ['href' => 'project-detail.php', 'placeholder' => 'In Plain Sight — still', 'tag' => 'Documentary', 'year' => '2025', 'title' => 'In Plain Sight'],
+    ['href' => 'work-detail.php', 'placeholder' => 'In Plain Sight — still', 'tag' => 'Documentary', 'year' => '2025', 'title' => 'In Plain Sight'],
     ['href' => 'index.php#work', 'placeholder' => 'Signal & Silence — still', 'tag' => 'Podcast', 'year' => '2024', 'title' => 'Signal & Silence'],
     ['href' => 'index.php#work', 'placeholder' => 'The Unseen Frame — still', 'tag' => 'Accessibility', 'year' => '2024', 'title' => 'The Unseen Frame'],
     ['href' => 'index.php#work', 'placeholder' => 'Currents — still', 'tag' => 'Digital Campaign', 'year' => '2023', 'title' => 'Currents'],
