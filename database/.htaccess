@@ -1,0 +1,9 @@
+# Not part of the served site -- schema.sql is applied once manually via
+# phpMyAdmin and never requested over HTTP. Block every request here
+# regardless of filename, same as config/ and includes/.
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+    Deny from all
+</IfModule>

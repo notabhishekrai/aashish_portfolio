@@ -2,39 +2,23 @@
 
 require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/includes/functions.php';
+require_once __DIR__ . '/includes/content.php';
 
-$site = [
-    'brand' => 'AASHISH RAI',
-    'brandHref' => 'index.php#hero',
-    'homeHref' => 'index.php',
-    'homeLabel' => 'All work',
-    'navCtaLabel' => 'Get in touch',
-    'navCtaHref' => 'index.php#contact',
-];
+$site = get_section('work', 'nav');
+$hero = get_section('work', 'hero');
 
-$hero = [
-    'eyebrow' => 'Archive',
-    'heading' => 'Every project, in order.',
-    'description' => 'Documentary features, accessibility campaigns, podcasts, brand films, and photography — the full record, 2019 to present.',
-];
+$items = array_map(static function (array $project): array {
+    return [
+        'href' => 'work-detail.php?slug=' . urlencode($project['slug']),
+        'image_path' => $project['card_image_path'],
+        'placeholder' => $project['card_placeholder_text'],
+        'tag' => $project['tag'],
+        'year' => $project['year'],
+        'title' => $project['title'],
+    ];
+}, get_all_work());
 
-$items = [
-    ['href' => 'work-detail.php', 'placeholder' => 'In Plain Sight — still', 'tag' => 'Documentary', 'year' => '2025', 'title' => 'In Plain Sight'],
-    ['href' => 'index.php#work', 'placeholder' => 'Signal & Silence — still', 'tag' => 'Podcast', 'year' => '2024', 'title' => 'Signal & Silence'],
-    ['href' => 'index.php#work', 'placeholder' => 'The Unseen Frame — still', 'tag' => 'Accessibility', 'year' => '2024', 'title' => 'The Unseen Frame'],
-    ['href' => 'index.php#work', 'placeholder' => 'Currents — still', 'tag' => 'Digital Campaign', 'year' => '2023', 'title' => 'Currents'],
-    ['href' => 'index.php#work', 'placeholder' => 'Still, Moving — series', 'tag' => 'Photography', 'year' => '2023', 'title' => 'Still, Moving'],
-    ['href' => 'index.php#work', 'placeholder' => 'Ordinary Light — still', 'tag' => 'Documentary Short', 'year' => '2022', 'title' => 'Ordinary Light'],
-    ['href' => 'index.php#work', 'placeholder' => 'Held Ground — still', 'tag' => 'Documentary', 'year' => '2021', 'title' => 'Held Ground'],
-    ['href' => 'index.php#work', 'placeholder' => 'Waiting Room — podcast', 'tag' => 'Podcast', 'year' => '2021', 'title' => 'Waiting Room'],
-    ['href' => 'index.php#work', 'placeholder' => 'Threshold — campaign', 'tag' => 'Digital Campaign', 'year' => '2020', 'title' => 'Threshold'],
-    ['href' => 'index.php#work', 'placeholder' => 'Field Notes — series', 'tag' => 'Photography', 'year' => '2019', 'title' => 'Field Notes'],
-];
-
-$footerData = [
-    'copyright' => '© 2026 Aashish Rai',
-    'backHomeLabel' => 'Back to home ↑',
-];
+$footerData = get_section('work', 'footer');
 
 $pageTitle = 'Work Archive';
 $pageDescription = $hero['description'];
@@ -60,7 +44,7 @@ require_once __DIR__ . '/includes/header.php';
 <?php foreach ($items as $i => $item): ?>
 <a href="<?= e($item['href']) ?>" class="work-card" style="text-decoration:none;color:inherit;display:block">
 <div data-reveal="clip" class="stagger-clip" style="--i:<?= (int) $i ?>;position:relative;aspect-ratio:4/5;overflow:hidden;clip-path:inset(0 0 100% 0);transition:clip-path 1.1s cubic-bezier(.22,1,.36,1)">
-<div class="img-placeholder grayscale work-card-img"><?= e($item['placeholder']) ?></div>
+<?= img_or_placeholder($item['image_path'], $item['placeholder'], 'work-card-img') ?>
 </div>
 <div style="padding:20px 2px 40px;border-bottom:1px solid var(--color-divider)">
 <div style="display:flex;gap:8px;margin-bottom:10px"><span class="tag tag-accent"><?= e($item['tag']) ?></span><span class="tag tag-neutral"><?= e($item['year']) ?></span></div>

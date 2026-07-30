@@ -2,112 +2,60 @@
 
 require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/includes/functions.php';
+require_once __DIR__ . '/includes/content.php';
 
-$showJournal = true;
+$site = get_section('home', 'nav');
+$site['navLinks'] = [];
+$journalNavLink = null;
+foreach (get_nav_links() as $link) {
+    if ($link['id'] === 'journal') {
+        $journalNavLink = $link;
+    } else {
+        $site['navLinks'][] = $link;
+    }
+}
+$showJournal = $journalNavLink !== null;
+if ($showJournal) {
+    $site['journalNav'] = $journalNavLink;
+}
 
-$site = [
-    'brand' => 'AASHISH RAI',
-    'brandHref' => '#hero',
-    'navLinks' => [
-        ['id' => 'about', 'label' => 'About', 'href' => '#about'],
-        ['id' => 'services', 'label' => 'Services', 'href' => '#services'],
-        ['id' => 'work', 'label' => 'Work', 'href' => '#work'],
-    ],
-    'journalNav' => ['id' => 'journal', 'label' => 'Journal', 'href' => '#journal'],
-    'navCtaLabel' => 'Get in touch',
-    'navCtaHref' => '#contact',
-];
+$hero = get_section('home', 'hero');
 
-$hero = [
-    'eyebrow' => 'Documentary Director — Creative Producer',
-    'titleLine1' => 'Aashish',
-    'titleLine2' => 'Rai',
-    'subtitle' => 'Stories built frame by frame — documentary, accessibility, and the quiet drama of everyday life, produced and directed end to end.',
-    'ctaPrimaryLabel' => 'See the work',
-    'ctaPrimaryHref' => '#work',
-    'ctaSecondaryLabel' => 'Start a project',
-    'ctaSecondaryHref' => '#contact',
-    'scrollLabel' => 'Scroll',
-    'recLabel' => 'REC 00:00:12:04',
-    'portraitPlaceholder' => 'Portrait — Aashish Rai',
-];
+$about = get_section('home', 'about');
+$about['stats'] = get_stats();
 
-$about = [
-    'eyebrow' => 'About',
-    'heading' => 'Directing with care, producing with rigor.',
-    'paragraph1' => "Aashish Rai makes documentary films and leads the productions behind them — moving between the camera and the call sheet without losing sight of either. The work spans accessibility campaigns, character-driven nonfiction, podcasts, and brand films, all built on the same instinct: point the camera at what's actually true.",
-    'paragraph2' => 'Recent work has screened at regional festivals and shipped for clients across health, education, and media.',
-    'stats' => [
-        ['value' => 10, 'label' => 'Years directing'],
-        ['value' => 40, 'label' => 'Projects produced'],
-        ['value' => 15, 'label' => 'Festival selections'],
-    ],
-    'portraitPlaceholder' => 'Aashish Rai — on set',
-];
+$services = get_section('home', 'services_intro');
+$services['items'] = get_services();
 
-$services = [
-    'eyebrow' => 'What I Do',
-    'heading' => 'Direction and production, from first frame to final cut.',
-    'items' => [
-        ['title' => 'Documentary Direction', 'description' => 'Long-form nonfiction from concept through final color — festival features and character-driven shorts.'],
-        ['title' => 'Creative Production', 'description' => 'Budgets, crews, permits, schedules — the structure that lets a story get made on time and intact.'],
-        ['title' => 'Accessibility Consulting', 'description' => 'Captioning, audio description, and inclusive production practice built into the process, not bolted on after.'],
-        ['title' => 'Podcast Direction & Production', 'description' => 'Series development, sound design, and episodic direction for narrative and interview formats.'],
-        ['title' => 'Digital & Brand Campaigns', 'description' => "Short-form and social-native films built around a brand's real story, not a template."],
-        ['title' => 'Photography & Videography', 'description' => 'Stills and motion on the same set — a single eye across both mediums.'],
-    ],
-];
+$work = get_section('home', 'work_intro');
+$work['items'] = array_map(static function (array $item): array {
+    return [
+        'href' => 'work-detail.php?slug=' . urlencode($item['slug']),
+        'image_path' => $item['card_image_path'],
+        'placeholder' => $item['card_placeholder_text'],
+        'tag' => $item['tag'],
+        'year' => $item['year'],
+        'title' => $item['title'],
+    ];
+}, get_featured_work(6));
 
-$work = [
-    'eyebrow' => 'Selected Work',
-    'heading' => 'A decade of stories, told frame by frame.',
-    'description' => 'Documentary features, accessibility campaigns, podcasts, and brand films — six recent works.',
-    'viewAllLabel' => 'View all work',
-    'viewAllHref' => 'work-archive.php',
-    'items' => [
-        ['href' => 'work-detail.php', 'placeholder' => 'In Plain Sight — still', 'tag' => 'Documentary', 'year' => '2025', 'title' => 'In Plain Sight'],
-        ['href' => '#work', 'placeholder' => 'Signal & Silence — still', 'tag' => 'Podcast', 'year' => '2024', 'title' => 'Signal & Silence'],
-        ['href' => '#work', 'placeholder' => 'The Unseen Frame — still', 'tag' => 'Accessibility', 'year' => '2024', 'title' => 'The Unseen Frame'],
-        ['href' => '#work', 'placeholder' => 'Currents — still', 'tag' => 'Digital Campaign', 'year' => '2023', 'title' => 'Currents'],
-        ['href' => '#work', 'placeholder' => 'Still, Moving — series', 'tag' => 'Photography', 'year' => '2023', 'title' => 'Still, Moving'],
-        ['href' => '#work', 'placeholder' => 'Ordinary Light — still', 'tag' => 'Documentary Short', 'year' => '2022', 'title' => 'Ordinary Light'],
-    ],
-];
+$journal = get_section('home', 'journal_intro');
+$journal['items'] = array_map(static function (array $item): array {
+    return [
+        'href' => 'journal-detail.php?slug=' . urlencode($item['slug']),
+        'kicker' => $item['kicker'],
+        'title' => $item['title'],
+        'body' => $item['card_body'],
+        'date' => date('M Y', strtotime($item['published_on'])),
+    ];
+}, get_featured_journal(3));
 
-$journal = [
-    'eyebrow' => 'Journal',
-    'heading' => 'Notes from the edit room.',
-    'viewAllLabel' => 'View all entries',
-    'viewAllHref' => 'journal-archive.php',
-    'items' => [
-        ['href' => 'journal-detail.php?entry=1', 'kicker' => 'Accessibility', 'title' => "On filming what can't be seen", 'body' => 'Notes on audio description as a directing choice, not a compliance checkbox.', 'date' => 'Jun 2026'],
-        ['href' => '#journal', 'kicker' => 'Craft', 'title' => "The producer's real job", 'body' => "It's rarely the budget. It's protecting the two hours where the scene actually happens.", 'date' => 'Apr 2026'],
-        ['href' => '#journal', 'kicker' => 'Podcast', 'title' => 'Sound before picture', 'body' => 'Why every video project on my slate starts with a conversation, recorded and unscripted.', 'date' => 'Feb 2026'],
-    ],
-];
+$contact = get_section('home', 'contact');
+$contact['socials'] = get_socials();
 
-$contact = [
-    'eyebrow' => 'Contact',
-    'heading' => "Let's make something honest.",
-    'email' => 'hello@aashishrai.com',
-    'socials' => [
-        ['label' => 'Instagram', 'href' => '#'],
-        ['label' => 'Vimeo', 'href' => '#'],
-        ['label' => 'LinkedIn', 'href' => '#'],
-    ],
-    'formNameLabel' => 'Name',
-    'formNamePlaceholder' => 'Your name',
-    'formEmailLabel' => 'Email',
-    'formEmailPlaceholder' => 'you@studio.com',
-    'formDetailsLabel' => 'Project details',
-    'formDetailsPlaceholder' => 'What are you making?',
-    'submitLabel' => 'Send inquiry',
-];
+$footerData = get_section('home', 'footer');
 
-$footerData = [
-    'copyright' => '© 2026 Aashish Rai',
-    'backToTopLabel' => 'Back to top ↑',
-];
+$contactStatus = $_GET['contact'] ?? null;
 
 $pageDescription = $hero['subtitle'];
 
@@ -146,7 +94,7 @@ require_once __DIR__ . '/includes/header.php';
 <div style="width:1px;height:64%;background:var(--color-divider);justify-self:center;position:relative;z-index:2"></div>
 <div style="position:relative;aspect-ratio:3/4;width:100%;z-index:2" data-parallax="0.12">
 <div aria-hidden="true" style="position:absolute;inset:16px -16px -16px 16px;border:2px solid var(--color-accent);z-index:-1"></div>
-<div class="img-placeholder grayscale"><?= e($hero['portraitPlaceholder']) ?></div>
+<?= img_or_placeholder($hero['portraitImagePath'] ?? null, $hero['portraitPlaceholder']) ?>
 </div>
 <div aria-hidden="true" style="position:absolute;top:32px;right:48px;display:flex;align-items:center;gap:8px;font:600 11px var(--font-heading);letter-spacing:.14em;color:var(--color-accent-700);opacity:.75;z-index:2">
 <span style="width:8px;height:8px;border-radius:50%;background:var(--color-accent);animation:pulseCue 1.6s ease-in-out infinite"></span><?= e($hero['recLabel']) ?>
@@ -162,7 +110,7 @@ require_once __DIR__ . '/includes/header.php';
 <div aria-hidden="true" style="position:absolute;inset:20px -20px -20px 20px;background:var(--color-accent-100);z-index:0"></div>
 <div data-reveal="clip" style="position:relative;z-index:1;aspect-ratio:3/4;overflow:hidden;clip-path:inset(0 0 100% 0);transition:clip-path 1.1s cubic-bezier(.22,1,.36,1)">
 <div data-parallax="0.08" style="position:absolute;inset:-6% 0;height:112%">
-<div class="img-placeholder grayscale"><?= e($about['portraitPlaceholder']) ?></div>
+<?= img_or_placeholder($about['portraitImagePath'] ?? null, $about['portraitPlaceholder']) ?>
 </div>
 </div>
 </div>
@@ -216,7 +164,7 @@ require_once __DIR__ . '/includes/header.php';
 <?php foreach ($work['items'] as $i => $item): ?>
 <a href="<?= e($item['href']) ?>" class="work-card" style="text-decoration:none;color:inherit;display:block">
 <div data-reveal="clip" class="stagger-clip" style="--i:<?= (int) $i ?>;position:relative;aspect-ratio:4/5;overflow:hidden;clip-path:inset(0 0 100% 0);transition:clip-path 1.1s cubic-bezier(.22,1,.36,1)">
-<div class="img-placeholder grayscale work-card-img" data-parallax="0.06" style="left:0;right:0;top:-9%;height:118%"><?= e($item['placeholder']) ?></div>
+<?= img_or_placeholder($item['image_path'], $item['placeholder'], 'work-card-img', 'data-parallax="0.06" style="left:0;right:0;top:-9%;height:118%"') ?>
 </div>
 <div style="padding:20px 2px 40px;border-bottom:1px solid var(--color-divider)">
 <div style="display:flex;gap:8px;margin-bottom:10px"><span class="tag tag-accent"><?= e($item['tag']) ?></span><span class="tag tag-neutral"><?= e($item['year']) ?></span></div>
@@ -267,7 +215,16 @@ require_once __DIR__ . '/includes/header.php';
 <?php endforeach; ?>
 </div>
 </div>
-<form id="contact-form" data-reveal="fade" style="display:flex;flex-direction:column;gap:18px;position:relative;z-index:1">
+<form id="contact-form" action="contact-submit.php" method="post" data-reveal="fade" style="display:flex;flex-direction:column;gap:18px;position:relative;z-index:1">
+<?php if ($contactStatus === 'sent'): ?>
+<p style="padding:12px 16px;margin:0;background:var(--color-accent-100);color:var(--color-accent-800);font-size:14px;border-radius:var(--radius-sm)">Thanks — your message has been sent.</p>
+<?php elseif ($contactStatus === 'error'): ?>
+<p style="padding:12px 16px;margin:0;background:#fbe4e4;color:#7a1f1f;font-size:14px;border-radius:var(--radius-sm)">Please fill in all fields with a valid email address.</p>
+<?php endif; ?>
+<div style="position:absolute;left:-9999px;top:-9999px" aria-hidden="true">
+<label for="website">Leave this field empty</label>
+<input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+</div>
 <div class="field"><label for="name"><?= e($contact['formNameLabel']) ?></label><input class="input" id="name" name="name" type="text" placeholder="<?= e($contact['formNamePlaceholder']) ?>"></div>
 <div class="field"><label for="email"><?= e($contact['formEmailLabel']) ?></label><input class="input" id="email" name="email" type="email" placeholder="<?= e($contact['formEmailPlaceholder']) ?>"></div>
 <div class="field"><label for="details"><?= e($contact['formDetailsLabel']) ?></label><textarea class="input" id="details" name="details" placeholder="<?= e($contact['formDetailsPlaceholder']) ?>"></textarea></div>
