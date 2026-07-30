@@ -95,6 +95,11 @@
     });
   }
   window.addEventListener('resize', recalcParallax, { passive: true });
+  // The Archivo web font loads async and can reflow the layout after these
+  // rects were first measured, leaving parallax offsets stale until resize.
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(recalcParallax);
+  }
 
   var ticking = false;
   function onScroll() {
