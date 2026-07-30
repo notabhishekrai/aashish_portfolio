@@ -22,3 +22,14 @@ RewriteRule ^ https://aashishrai.info.np%{REQUEST_URI} [L,R=301]
 <FilesMatch "^\.">
     Require all denied
 </FilesMatch>
+
+# Defense-in-depth response headers. No CSP here -- pages rely on inline
+# style="" attributes throughout and a Google Fonts @import in style.css,
+# so a correct script/style-src policy needs hands-on browser verification
+# rather than a guess baked into ops config.
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Strict-Transport-Security "max-age=31536000"
+</IfModule>
