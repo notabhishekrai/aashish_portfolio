@@ -1,5 +1,9 @@
 ErrorDocument 404 /404.php
 
+# Don't let the server list directory contents for folders with no index
+# file (assets/images, etc.)
+Options -Indexes
+
 RewriteEngine On
 
 # Block .git/ entirely — some Git-deploy setups leave it in the served
@@ -7,9 +11,12 @@ RewriteEngine On
 # not directory path segments.
 RewriteRule ^\.git/ - [F,L]
 
-# Force HTTPS
+# Force HTTPS. The redirect target is pinned to the canonical domain rather
+# than built from %{HTTP_HOST} — that reflects the client-supplied Host
+# header unsanitized, which on a misconfigured/catch-all vhost lets a
+# spoofed Host header steer the redirect. Update this if the domain changes.
 RewriteCond %{HTTPS} off
-RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+RewriteRule ^ https://aashishrai.info.np%{REQUEST_URI} [L,R=301]
 
 # Deny access to dotfiles (.env, .git, etc.)
 <FilesMatch "^\.">

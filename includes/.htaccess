@@ -1,0 +1,9 @@
+# These are partial templates included by the top-level pages — they assume
+# config.php and functions.php already ran and fatal-error if requested
+# directly. Block every request here regardless of filename.
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+    Deny from all
+</IfModule>
