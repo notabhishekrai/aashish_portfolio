@@ -46,6 +46,10 @@ function attempt_login(string $username, string $password): bool
     }
 
     if ($user['locked_until'] !== null && strtotime($user['locked_until']) > time()) {
+        // Same dummy comparison as the "no such user" branch above, so a
+        // locked account isn't distinguishable from a nonexistent one or a
+        // wrong password on an unlocked account by response timing.
+        password_verify($password, '$2y$10$invalidinvalidinvalidinvalidinvalidinvalidinvalidinva');
         return false;
     }
 
