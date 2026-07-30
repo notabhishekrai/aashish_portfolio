@@ -97,17 +97,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
+        // Old images are only deleted once validation passes and the DB
+        // write commits (below) -- deleting them here would permanently
+        // break the current image if this same submission fails validation
+        // on an unrelated field (e.g. a missing kicker), since the DB would
+        // still point at the now-deleted path.
         $existingHeroImage = $entry['hero_image_path'] ?? null;
         $heroImagePath = process_uploaded_file($_FILES['hero_image'] ?? null);
-        if ($heroImagePath !== null && $existingHeroImage) {
-            delete_uploaded_image($existingHeroImage);
-        }
 
         $existingInlineImage = $entry['inline_image_path'] ?? null;
         $inlineImagePath = process_uploaded_file($_FILES['inline_image'] ?? null);
-        if ($inlineImagePath !== null && $existingInlineImage) {
-            delete_uploaded_image($existingInlineImage);
-        }
 
         $isFeatured = isset($_POST['is_featured']);
         $featuredSortOrder = $isFeatured ? (int) ($_POST['featured_sort_order'] ?? 0) : null;
@@ -151,6 +150,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $setSql = implode(', ', array_map(static fn($col) => "$col = ?", array_keys($data)));
                 $stmt = $pdo->prepare("UPDATE journal_entries SET $setSql WHERE id = ?");
                 $stmt->execute([...array_values($data), $id]);
+            }
+
+            if ($heroImagePath !== null && $existingHeroImage) {
+                delete_uploaded_image($existingHeroImage);
+            }
+            if ($inlineImagePath !== null && $existingInlineImage) {
+                delete_uploaded_image($existingInlineImage);
             }
 
             set_flash('success', 'Entry saved.');

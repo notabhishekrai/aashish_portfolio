@@ -93,8 +93,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
+        // Old images are only deleted once validation passes and the DB
+        // write commits (below) -- deleting them here would permanently
+        // break the current image if this same submission fails validation
+        // on an unrelated field (e.g. a missing tag), since the DB would
+        // still point at the now-deleted path.
         $stillsFiles = reshape_files('stills');
         $stills = [];
+        $stillImagesToDelete = [];
         foreach ($_POST['stills'] ?? [] as $index => $row) {
             $placeholder = trim((string) ($row['placeholder'] ?? ''));
             if ($placeholder === '') {
@@ -103,7 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $existingPath = trim((string) ($row['existing_image_path'] ?? ''));
             $uploadedPath = process_uploaded_file($stillsFiles[$index]['image'] ?? null);
             if ($uploadedPath !== null && $existingPath !== '') {
-                delete_uploaded_image($existingPath);
+                $stillImagesToDelete[] = $existingPath;
             }
             $stills[] = [
                 'image_path' => $uploadedPath ?? ($existingPath !== '' ? $existingPath : null),
@@ -113,15 +119,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $existingCardImage = $project['card_image_path'] ?? null;
         $cardImagePath = process_uploaded_file($_FILES['card_image'] ?? null);
-        if ($cardImagePath !== null && $existingCardImage) {
-            delete_uploaded_image($existingCardImage);
-        }
 
         $existingHeroImage = $project['hero_image_path'] ?? null;
         $heroImagePath = process_uploaded_file($_FILES['hero_image'] ?? null);
-        if ($heroImagePath !== null && $existingHeroImage) {
-            delete_uploaded_image($existingHeroImage);
-        }
 
         $data = [
             'slug' => $slug,
@@ -168,6 +168,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $setSql = implode(', ', array_map(static fn($col) => "$col = ?", array_keys($data)));
                 $stmt = $pdo->prepare("UPDATE work_projects SET $setSql WHERE id = ?");
                 $stmt->execute([...array_values($data), $id]);
+            }
+
+            if ($cardImagePath !== null && $existingCardImage) {
+                delete_uploaded_image($existingCardImage);
+            }
+            if ($heroImagePath !== null && $existingHeroImage) {
+                delete_uploaded_image($existingHeroImage);
+            }
+            foreach ($stillImagesToDelete as $oldStillPath) {
+                delete_uploaded_image($oldStillPath);
             }
 
             set_flash('success', 'Project saved.');
