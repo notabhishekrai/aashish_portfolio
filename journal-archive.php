@@ -2,35 +2,22 @@
 
 require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/includes/functions.php';
+require_once __DIR__ . '/includes/content.php';
 
-$site = [
-    'brand' => 'AASHISH RAI',
-    'brandHref' => 'index.php#hero',
-    'homeHref' => 'index.php',
-    'homeLabel' => 'Home',
-    'navCtaLabel' => 'Get in touch',
-    'navCtaHref' => 'index.php#contact',
-];
+$site = get_section('journal', 'nav');
+$hero = get_section('journal', 'hero');
 
-$hero = [
-    'eyebrow' => 'Journal',
-    'heading' => 'Notes from the edit room.',
-    'description' => 'Writing on craft, accessibility, and the small decisions behind the work.',
-];
+$items = array_map(static function (array $entry): array {
+    return [
+        'href' => 'journal-detail.php?slug=' . urlencode($entry['slug']),
+        'kicker' => $entry['kicker'],
+        'title' => $entry['title'],
+        'body' => $entry['card_body'],
+        'date' => date('M Y', strtotime($entry['published_on'])),
+    ];
+}, get_all_journal());
 
-$items = [
-    ['href' => 'journal-detail.php?entry=1', 'kicker' => 'Accessibility', 'title' => "On filming what can't be seen", 'body' => 'Notes on audio description as a directing choice, not a compliance checkbox.', 'date' => 'Jun 2026'],
-    ['href' => 'journal-detail.php?entry=2', 'kicker' => 'Craft', 'title' => "The producer's real job", 'body' => "It's rarely the budget. It's protecting the two hours where the scene actually happens.", 'date' => 'Apr 2026'],
-    ['href' => 'journal-detail.php?entry=3', 'kicker' => 'Podcast', 'title' => 'Sound before picture', 'body' => 'Why every video project on my slate starts with a conversation, recorded and unscripted.', 'date' => 'Feb 2026'],
-    ['href' => 'journal-detail.php?entry=4', 'kicker' => 'Documentary', 'title' => 'What eighteen months in the field teaches you', 'body' => 'On patience, trust, and the footage that never makes the cut but changes everything after.', 'date' => 'Dec 2025'],
-    ['href' => 'journal-detail.php?entry=5', 'kicker' => 'Craft', 'title' => 'Cutting for the ear, not just the eye', 'body' => 'A working note on pacing picture around sound design instead of the other way around.', 'date' => 'Sep 2025'],
-    ['href' => 'journal-detail.php?entry=6', 'kicker' => 'Production', 'title' => 'The permit is the film', 'body' => 'Why the unglamorous logistics of access are often the real creative work on a documentary set.', 'date' => 'Jun 2025'],
-];
-
-$footerData = [
-    'copyright' => '© 2026 Aashish Rai',
-    'backHomeLabel' => 'Back to home ↑',
-];
+$footerData = get_section('journal', 'footer');
 
 $pageTitle = 'Journal';
 $pageDescription = $hero['description'];

@@ -2,45 +2,46 @@
 
 require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/includes/functions.php';
+require_once __DIR__ . '/includes/content.php';
 
-$entryNumber = isset($_GET['entry']) ? max(1, (int) $_GET['entry']) : 1;
+$slug = $_GET['slug'] ?? '';
+$row = $slug !== '' ? get_journal_by_slug($slug) : null;
 
-$site = [
-    'brand' => 'AASHISH RAI',
-    'brandHref' => 'index.php#hero',
-    'archiveHref' => 'journal-archive.php',
-    'archiveLabel' => 'All entries',
-    'navCtaLabel' => 'Get in touch',
-    'navCtaHref' => 'index.php#contact',
-];
+if ($row === null) {
+    require __DIR__ . '/404.php';
+    exit;
+}
+
+$site = get_section('journal', 'nav');
+
+$allEntries = get_all_journal();
+$entryNumber = 1;
+foreach ($allEntries as $position => $listedEntry) {
+    if ($listedEntry['id'] === $row['id']) {
+        $entryNumber = $position + 1;
+        break;
+    }
+}
 
 $entry = [
-    'tags' => [
-        ['label' => 'Accessibility', 'variant' => 'accent'],
-        ['label' => 'Jun 2026', 'variant' => 'neutral'],
-    ],
-    'title' => "On filming what can't be seen",
-    'subtitle' => 'Notes on audio description as a directing choice, made on set, not fixed in post.',
-    'heroPlaceholder' => 'Journal entry — key frame',
-    'introParagraphs' => [
-        ['text' => "Most audio description gets written after the film is locked — a narrator reading the screen back to a viewer who can't see it. I've come to think that's backwards. If a scene only works because of what it looks like, and you can't say what it looks like in the time the scene gives you, the scene has a problem the edit should have caught."],
-        ['text' => "On In Plain Sight, our accessibility consultant sat in on blocking rehearsals, not just the final color pass. If an action couldn't be described in the natural pause of the dialogue around it, we restaged it. That discipline made the film better for every viewer, not just the ones using the described track."],
-    ],
-    'inlineImagePlaceholder' => 'On set — accessibility consultant reviewing blocking',
-    'subheading' => 'Three things I now ask on every shoot',
-    'subheadingParagraphs' => [
-        ['text' => 'Is there a natural pause here for a description to live in. Does this shot tell you something a sighted viewer gets for free. And if I cut this the way I want to, does the meaning survive without the picture.'],
-        ['text' => 'None of this slows a shoot down much. It mostly just means the accessibility consultant is in the room from day one, not the finishing suite.'],
-    ],
-    'nextLabel' => 'More from the journal',
-    'nextTitle' => "The producer's real job",
-    'nextHref' => 'journal-archive.php',
+    'tags' => $row['tags'],
+    'title' => $row['title'],
+    'subtitle' => $row['subtitle'],
+    'heroImagePath' => $row['hero_image_path'],
+    'heroPlaceholder' => $row['hero_placeholder_text'],
+    'introParagraphs' => $row['intro_paragraphs'],
+    'inlineImagePath' => $row['inline_image_path'],
+    'inlineImagePlaceholder' => $row['inline_placeholder_text'],
+    'subheading' => $row['subheading'],
+    'subheadingParagraphs' => $row['subheading_paragraphs'],
 ];
 
-$footerData = [
-    'copyright' => '© 2026 Aashish Rai',
-    'backHomeLabel' => 'Back to home ↑',
-];
+$next = get_next_journal((int) $row['id']);
+$entry['nextLabel'] = 'More from the journal';
+$entry['nextTitle'] = $next['title'] ?? '';
+$entry['nextHref'] = $next !== null ? 'journal-detail.php?slug=' . urlencode($next['slug']) : 'journal-archive.php';
+
+$footerData = get_section('journal', 'footer');
 
 $pageTitle = $entry['title'];
 $pageDescription = $entry['subtitle'];
@@ -66,7 +67,7 @@ require_once __DIR__ . '/includes/header.php';
 </section>
 
 <section data-reveal="clip" style="position:relative;aspect-ratio:16/8;overflow:hidden;clip-path:inset(0 0 100% 0);transition:clip-path 1.1s cubic-bezier(.22,1,.36,1);margin:0 48px 80px;max-width:1200px;margin-left:auto;margin-right:auto">
-<div class="img-placeholder grayscale"><?= e($entry['heroPlaceholder']) ?></div>
+<?= img_or_placeholder($entry['heroImagePath'], $entry['heroPlaceholder']) ?>
 </section>
 
 <article style="padding:0 48px 140px;max-width:760px;margin:0 auto">
@@ -74,7 +75,7 @@ require_once __DIR__ . '/includes/header.php';
 <p data-reveal="fade" style="font-size:17px;line-height:1.85;opacity:.8;margin:0 0 26px"><?= e($para['text']) ?></p>
 <?php endforeach; ?>
 <div data-reveal="clip" style="position:relative;aspect-ratio:16/10;overflow:hidden;clip-path:inset(0 0 100% 0);transition:clip-path 1s cubic-bezier(.22,1,.36,1);margin:8px 0 36px">
-<div class="img-placeholder grayscale"><?= e($entry['inlineImagePlaceholder']) ?></div>
+<?= img_or_placeholder($entry['inlineImagePath'], $entry['inlineImagePlaceholder']) ?>
 </div>
 <h2 data-reveal="fade" style="font-size:26px;margin:48px 0 20px"><?= e($entry['subheading']) ?></h2>
 <?php foreach ($entry['subheadingParagraphs'] as $para): ?>

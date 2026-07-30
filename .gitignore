@@ -4,3 +4,8 @@ node_modules/
 *.log
 .DS_Store
 Thumbs.db
+
+# Admin-uploaded images -- not source, and can be large/binary.
+assets/images/uploads/*
+!assets/images/uploads/.gitkeep
+!assets/images/uploads/.htaccess

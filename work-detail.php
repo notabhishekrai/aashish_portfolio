@@ -2,49 +2,38 @@
 
 require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/includes/functions.php';
+require_once __DIR__ . '/includes/content.php';
 
-$site = [
-    'brand' => 'AASHISH RAI',
-    'brandHref' => 'index.php#hero',
-    'homeHref' => 'index.php',
-    'homeLabel' => 'All work',
-    'navCtaLabel' => 'Get in touch',
-    'navCtaHref' => 'index.php#contact',
-];
+$slug = $_GET['slug'] ?? '';
+$row = $slug !== '' ? get_work_by_slug($slug) : null;
+
+if ($row === null) {
+    require __DIR__ . '/404.php';
+    exit;
+}
+
+$site = get_section('work', 'nav');
 
 $project = [
-    'tags' => [
-        ['label' => 'Documentary', 'variant' => 'accent'],
-        ['label' => '2025', 'variant' => 'neutral'],
-        ['label' => '42 min', 'variant' => 'outline'],
-    ],
-    'title' => 'In Plain Sight',
-    'lead' => 'A feature documentary following three accessibility advocates rebuilding public space for their own communities — filmed over eighteen months with audio description built into the shoot, not added after.',
-    'heroPlaceholder' => 'In Plain Sight — key frame',
-    'synopsisHeading' => 'Synopsis',
-    'synopsisParagraphs' => [
-        ['text' => 'Shot across four cities, In Plain Sight follows Meera, Josiah, and Tomas as they push their local governments to rebuild sidewalks, transit stops, and public buildings around the way they actually move through the world — not the way planners assumed they would.'],
-        ['text' => 'The film was directed with an accessibility consultant embedded from the first location scout, and every frame was cut with an eye toward what an audio-described version would need to carry.'],
-    ],
-    'credits' => [
-        ['label' => 'Director', 'value' => 'Aashish Rai'],
-        ['label' => 'Producer', 'value' => 'Aashish Rai'],
-        ['label' => 'Runtime', 'value' => '42 min'],
-        ['label' => 'Format', 'value' => 'Documentary Feature'],
-        ['label' => 'Year', 'value' => '2025'],
-        ['label' => 'Selection', 'value' => 'Riverside Doc Festival'],
-    ],
-    'stillsEyebrow' => 'Stills',
-    'stillsHeading' => 'From the field.',
-    'stills' => [
-        ['placeholder' => 'Still 1'],
-        ['placeholder' => 'Still 2'],
-        ['placeholder' => 'Still 3'],
-    ],
-    'nextLabel' => 'Next project',
-    'nextTitle' => 'Signal & Silence',
-    'nextHref' => 'index.php#work',
+    'tags' => $row['tags'],
+    'title' => $row['title'],
+    'lead' => $row['lead'],
+    'heroImagePath' => $row['hero_image_path'],
+    'heroPlaceholder' => $row['hero_placeholder_text'],
+    'synopsisHeading' => $row['synopsis_heading'],
+    'synopsisParagraphs' => $row['synopsis_paragraphs'],
+    'credits' => $row['credits'],
+    'stillsEyebrow' => $row['stills_eyebrow'],
+    'stillsHeading' => $row['stills_heading'],
+    'stills' => $row['stills'],
 ];
+
+$next = get_next_work((int) $row['id']);
+$project['nextLabel'] = 'Next project';
+$project['nextTitle'] = $next['title'] ?? '';
+$project['nextHref'] = $next !== null ? 'work-detail.php?slug=' . urlencode($next['slug']) : 'work-archive.php';
+
+$footerData = get_section('work', 'footer');
 
 $pageTitle = $project['title'];
 $pageDescription = $project['lead'];
@@ -71,7 +60,7 @@ require_once __DIR__ . '/includes/header.php';
 </section>
 
 <section data-reveal="clip" style="position:relative;aspect-ratio:16/7;overflow:hidden;clip-path:inset(0 0 100% 0);transition:clip-path 1.2s cubic-bezier(.22,1,.36,1);margin:0 48px 120px;max-width:1400px;margin-left:auto;margin-right:auto">
-<div class="img-placeholder grayscale"><?= e($project['heroPlaceholder']) ?></div>
+<?= img_or_placeholder($project['heroImagePath'], $project['heroPlaceholder']) ?>
 </section>
 
 <section style="padding:0 48px 120px;max-width:1400px;margin:0 auto;display:grid;grid-template-columns:1.4fr 1fr;gap:80px">
@@ -84,8 +73,8 @@ require_once __DIR__ . '/includes/header.php';
 <div data-reveal="fade" style="border-top:2px solid var(--color-divider);padding-top:8px">
 <table class="table">
 <tbody>
-<?php foreach ($project['credits'] as $row): ?>
-<tr><td style="opacity:.6"><?= e($row['label']) ?></td><td><?= e($row['value']) ?></td></tr>
+<?php foreach ($project['credits'] as $credit): ?>
+<tr><td style="opacity:.6"><?= e($credit['label']) ?></td><td><?= e($credit['value']) ?></td></tr>
 <?php endforeach; ?>
 </tbody>
 </table>
@@ -99,7 +88,7 @@ require_once __DIR__ . '/includes/header.php';
 </div>
 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px">
 <?php foreach ($project['stills'] as $i => $still): ?>
-<div class="work-card stagger-clip" data-reveal="clip" style="--i:<?= (int) $i ?>;position:relative;aspect-ratio:4/5;overflow:hidden;clip-path:inset(0 0 100% 0);transition:clip-path 1s cubic-bezier(.22,1,.36,1)"><div class="img-placeholder grayscale work-card-img"><?= e($still['placeholder']) ?></div></div>
+<div class="work-card stagger-clip" data-reveal="clip" style="--i:<?= (int) $i ?>;position:relative;aspect-ratio:4/5;overflow:hidden;clip-path:inset(0 0 100% 0);transition:clip-path 1s cubic-bezier(.22,1,.36,1)"><?= img_or_placeholder($still['image_path'] ?? null, $still['placeholder'], 'work-card-img') ?></div>
 <?php endforeach; ?>
 </div>
 </section>
@@ -111,5 +100,10 @@ require_once __DIR__ . '/includes/header.php';
 </div>
 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
 </a>
+
+<footer style="padding:32px 48px;display:flex;justify-content:space-between;align-items:center;border-top:2px solid var(--color-divider);font-size:12px;opacity:.6">
+<span><?= e($footerData['copyright']) ?></span>
+<a href="<?= e($site['homeHref']) ?>" style="color:inherit"><?= e($footerData['backHomeLabel']) ?></a>
+</footer>
 </div>
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

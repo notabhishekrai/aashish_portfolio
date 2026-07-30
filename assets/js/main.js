@@ -175,12 +175,4 @@
     window.addEventListener('scroll', updateActive, { passive: true });
     updateActive();
   }
-
-  // Contact form: no backend wired up yet
-  var contactForm = document.getElementById('contact-form');
-  if (contactForm) {
-    contactForm.addEventListener('submit', function (e) {
-      e.preventDefault();
-    });
-  }
 })();

@@ -1,0 +1,14 @@
+# Uploaded images must stay publicly GET-able (unlike config/, includes/,
+# database/), so this is not a blanket deny -- it only blocks anything in
+# this folder from being executed as a script, in case an upload ever slips
+# past the extension/MIME checks in admin/includes/upload.php.
+<IfModule mod_authz_core.c>
+    <FilesMatch "\.(php|phtml|php\d|phar|pl|py|cgi|sh)$">
+        Require all denied
+    </FilesMatch>
+</IfModule>
+<IfModule !mod_authz_core.c>
+    <FilesMatch "\.(php|phtml|php\d|phar|pl|py|cgi|sh)$">
+        Deny from all
+    </FilesMatch>
+</IfModule>
